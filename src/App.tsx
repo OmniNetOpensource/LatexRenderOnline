@@ -19,7 +19,7 @@ const App: React.FC = () => {
           });
           
           return <span key={index}  dangerouslySetInnerHTML={{__html:renderedHtml}}/>
-        }catch (err:any){
+        } catch (err: unknown) {
           return <span key={index} style={{color:`red`}}>{`invalid latex:${err}`}</span>
         }
       }else if(part.startsWith("$") && part.endsWith("$")){
@@ -32,7 +32,7 @@ const App: React.FC = () => {
           });
           
           return <span key={index}  dangerouslySetInnerHTML={{__html:renderedHtml}}/>
-        }catch (err:any){
+        } catch (err: unknown) {
           return <span key={index} style={{color:`red`}}>{`invalid latex:${err}`}</span>
         }
       }else{
