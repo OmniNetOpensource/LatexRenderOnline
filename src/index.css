@@ -1,0 +1,18 @@
+body{
+    margin: 0;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+:root{
+    --spacing-4:1rem;
+    --spacing-8:2rem;
+
+    --color-background-platform: #f0f2f5;
+    --color-background-panel: #ffffff;
+    --color-text: #2c3e50;
+    --color-base: black;    
+    --font-family: 'Courier New', Courier, monospace;
+}
