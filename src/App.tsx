@@ -6,8 +6,6 @@ import './App.css'
 
 const App: React.FC = () => {
   const [latex, setLatex] = useState<string>('$\\int_{0}^{1} x^2 dx$')
-  let renderedHtml: string
-
   const renderLatex = (text:string)=>{
     const parts=text.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
     return parts.map((part,index)=>{
