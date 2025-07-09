@@ -1,23 +1,128 @@
+.app-container{
+  height:100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+
+
 .platform{
   background-color: var(--color-background-platform);
   display: flex;
-  height:100vh;
-  width: 100vw;
-  padding: var(--spacing-4);
+  flex-direction: row;
+  width: 100%;
+  overflow: hidden;
 }
 
-.edit-area{
-  flex:1;
+.edit-area {
+  height: 100%;
+  width: 100%;
   padding: var(--spacing-4);
-  background-color: var(--color-background-panel);
+  background-color: var(--background-color);
+  color: var(--text-color);
   resize: none;
   border: none;
   outline: none;
-  border-right: 1px solid var(--color-base);
+  margin: 0;
 }
 
-.show-area{
-  flex:1;
+.show-area {
+  color: var(--text-color);
+  height: 100%;
+  width: 100%;
   padding: var(--spacing-4);
-  background-color: var(--color-background-panel);
+  background-color: var(--background-color);
+  overflow-wrap: break-word;
+  overflow-y: auto;
+  margin: 0;
+  padding-top:0;
+}
+
+.resize-handle{
+  width: 4px;
+  background-color: var(--resize-handle-background);
+  cursor:col-resize;
+  transition: background-color 0.2s;
+}
+.resize-handle:hover{
+  background-color: #a6bcc5;
+}
+
+/* --- 为内联代码添加自定义样式 --- */
+.show-area :not(pre) > code {
+  background-color: var(--code-background); /* 使用变量或备用颜色 */
+  color: var(--text-color);
+  padding: 0.2em 0.4em;
+  margin: 0 0.2em;
+  font-size: 85%;
+  border-radius: 6px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+}
+
+
+.code-wrapper{
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 4px 24px 0 rgba(0, 0, 0, 0.1),
+    0 1.5px 6px 0 rgba(0, 0, 0, 0.06);
+  border-radius: 8px 8px 8px 8px;
+}
+
+.code-wrapper pre code {
+  border-radius: 0 0 8px 8px;
+  border:none;
+  margin: 0;
+  padding: 1em;
+  overflow-x: auto;
+  display: block;
+  background : var(--code-background);
+}
+
+.code-wrapper pre {
+  margin: 0;
+}
+
+
+.code-toolbar{
+  border-radius: 8px 8px 0 0 ;
+  margin: 0;
+  color: var(--color-toolbar);
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background : var(--code-background);
+}
+
+
+.copy-button{
+  color:inherit;
+  font-size: inherit;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.lang-name{
+  background: transparent;
+  border: none;
+  user-select: none;
+  margin: 0 0.5rem;
+}
+
+blockquote{
+  background-color:#dedddd;
+  border-left: 2px solid rgba(0, 0, 0, 0.202);
+  color: var(--text-color);
+  font-size: 0.7rem;
+  padding: 5px;
+}
+
+blockquote p {
+  display: inline;
+  font-style: italic
 }
