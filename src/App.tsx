@@ -1,90 +1,23 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import 'katex/dist/katex.min.css'
 import Header from './components/Header/Header.tsx'
-import DOMPurify from 'dompurify'
-import {marked} from 'marked';
-import markedKatex from 'marked-katex-extension'
+
 import './App.css'
 import { ThemeContext } from './contexts/ThemeContext'; // 引入 ThemeContext
-import hljs from 'highlight.js';
-import { markedHighlight } from "marked-highlight";
+
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import useLocalStorage from './hooks/useLocalStorage.ts'
+import useRenderContent from './hooks/useRenderContent.ts';
 
 
-function insertBlankAroundDollar(src: string): string {
-  const out: string[] = [];
-  const lines = src.split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('$')) {
-      out.push('');
-    }
-    out.push(line);
-    if (trimmed.endsWith('$')) {
-      out.push('');
-    }
-  }
-  return out.join('\n');
-}
-marked.use(markedKatex({ throwOnError: false }));
-marked.use(markedHighlight({
-  langPrefix: 'hljs language-', // class前缀，保持和 highlight.js 默认一致
-  highlight(code: string, lang: string) {
-    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-    return hljs.highlight(code, { language }).value;
-  }
-}));
 
 
-const renderContent = async (text: string)=>{
-  const dirtyHtml = await marked.parse(insertBlankAroundDollar(text));
-  const cleanHtml = DOMPurify.sanitize(dirtyHtml);
-  
-  const parser = new DOMParser;
-
-  const doc = parser.parseFromString(cleanHtml,'text/html');
-
-  const codeElements = doc.querySelectorAll('pre > code');
-
-  codeElements.forEach(codeElement =>{
-    const preElement = codeElement.parentElement;
-    if (!preElement) return;
-
-    const codeWrapper = doc.createElement('div');
-    codeWrapper.className = 'code-wrapper';
-
-    const toolbar = doc.createElement('div');
-    toolbar.className='code-toolbar';
-    
-    const copyButton = doc.createElement('button');
-    copyButton.className='copy-button';
-    copyButton.textContent='copy';
-    copyButton.dataset.rawCode = codeElement.textContent ?? '';
-    
-    const langName = doc.createElement('span');
-    langName.className='lang-name';
-
-    const langMatch = codeElement.className.match(/language-(\w+)/);
-    const lang = langMatch ? langMatch[1] : 'text';
-    langName.textContent = lang;
-
-    toolbar.appendChild(langName);
-    toolbar.appendChild(copyButton);
-
-    codeWrapper.appendChild(toolbar);
-    
-    preElement.parentNode?.insertBefore(codeWrapper, preElement);
-    codeWrapper.appendChild(preElement);
-  });
-
-  const finalHtml = doc.body.innerHTML;
-
-  return {__html:finalHtml};
-}
 
 const App: React.FC = () => {
-  const [text, setText] = useState<string>(
+  const [text, setText] = useLocalStorage('text',
 `# LaTeX and Markdown Live Editor
 
 This editor supports both **Markdown** and **LaTeX**.
@@ -107,8 +40,10 @@ $$
 #include<stdio.c>
 return 0;
 \`\`\`
-`
-  )
+`);
+    
+  const renderHtml = useRenderContent(text);
+
   const {theme} = useContext(ThemeContext);
 
   useEffect(() => {
@@ -128,16 +63,7 @@ return 0;
 
   }, [theme]);
 
-
-  const [htmlObj,setHtmlObj] = useState<{__html:string}>({__html:""});
   
-  useEffect(()=>{
-    let actived = true;
-    renderContent(text).then(obj=>{
-      if(actived)  setHtmlObj(obj);
-    });
-    return ()=>{actived = false;}
-  },[text]);
 
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -177,9 +103,67 @@ return 0;
   },[]);
 
 
+  useEffect(()=>{
+    localStorage.setItem('text',text);
+  },[text]);
+
+  const handleExportPDF = () => {
+    const input = previewRef.current;
+    if (!input) {
+      console.error("Preview element not found!");
+      return;
+    }
+
+    // 使用 html2canvas 将 div 转换为 canvas
+    html2canvas(input, { 
+      useCORS: true, // 允许加载跨域图片和样式
+      scale: 4, // 提高分辨率，使PDF更清晰
+    }).then(canvas => {
+      // 获取 canvas 的图像数据
+      const imgData = canvas.toDataURL('image/png');
+      
+      // 创建 jsPDF 实例
+      // 'p' for portrait, 'mm' for millimeters, 'a4' for A4 size
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      // 计算图像在PDF中的尺寸
+      const imgWidth = 210; // A4 宽度 (mm)
+      const pageHeight = 297; // A4 高度 (mm)
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      let heightLeft = imgHeight;
+      
+      let position = 0;
+
+      // 添加第一页
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // 如果内容超出一页，则添加新页面
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      // 保存PDF文件
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+      const fileName = `latex_render_${timestamp}.pdf`;
+      
+      pdf.save(fileName);
+    });
+  };
+
   return (
     <div className="app-container" data-theme={theme}>
-      <Header />
+      <Header onExportPDF={handleExportPDF} />
       <PanelGroup direction="horizontal" className="platform">
         <Panel defaultSize={50} minSize={20}>
           <textarea
@@ -191,7 +175,7 @@ return 0;
         </Panel>
         <PanelResizeHandle className="resize-handle" />
         <Panel defaultSize={50} minSize={20}>
-          <div ref={previewRef} className="show-area" dangerouslySetInnerHTML={htmlObj} />
+          <div ref={previewRef} className="show-area" dangerouslySetInnerHTML={{__html:renderHtml}} />
         </Panel>
       </PanelGroup>
     </div>

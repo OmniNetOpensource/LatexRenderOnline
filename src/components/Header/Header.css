@@ -1,4 +1,19 @@
-.app-header{
-    height:8%;
-    background-color: var(--header-background);
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Align items to the right */
+  gap: 10px;
+  height: 60px; /* Change height to a fixed value */
+  background-color: var(--header-background);
+  padding: 0 20px; /* Add some padding */
+}
+
+.export-pdf{
+  border-radius: 20px;
+  height: 25px;
+  border: 2px solid var(--text-color);
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-color);
 }

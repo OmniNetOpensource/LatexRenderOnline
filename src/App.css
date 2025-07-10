@@ -101,7 +101,7 @@
 .copy-button{
   color:inherit;
   font-size: inherit;
-
+  margin: 0 0.5rem;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -115,7 +115,7 @@
 }
 
 blockquote{
-  background-color:#dedddd;
+  background-color:var(--blockquote-color);
   border-left: 2px solid rgba(0, 0, 0, 0.202);
   color: var(--text-color);
   font-size: 0.7rem;

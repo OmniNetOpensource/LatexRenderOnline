@@ -6,7 +6,8 @@
   --header-background: #f4edde;
   --resize-handle-background: #e0e0e0;
   --code-background:#f6eddc;
-  --color-toolbar:#5rgb(236, 231, 220)
+  --color-toolbar:#5rgb(236, 231, 220);
+  --blockquote-color: rgb(198, 198, 198);
 }
 
 [data-theme='dark'] {
@@ -18,6 +19,7 @@
   --resize-handle-background: #3a3a3a;
   --code-background:#0d1117;
   --color-toolbar:#ededed;
+  --blockquote-color: rgb(50, 49, 49);
 }
 
 body {
